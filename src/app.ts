@@ -1,14 +1,19 @@
+// 元数据的依赖
+import "reflect-metadata";
 import Koa from "koa";
 import json from "koa-json";
 const onerror = require("koa-onerror");
 const bodyparser = require("koa-bodyparser");
 const logger = require("koa-logger");
 const favicon = require("koa-favicon");
-import "reflect-metadata";
 
-import { useKoaServer } from "routing-controllers";
+import { useKoaServer, useContainer, Action } from "routing-controllers";
+import { Container } from "typedi";
 
-import UserController from "./controller/users";
+// controller
+import userController from "./controller/userController";
+
+useContainer(Container);
 
 const path = require("path");
 const app = new Koa();
@@ -42,12 +47,18 @@ app.use(async (ctx, next) => {
 });
 
 useKoaServer(app, {
+  routePrefix: "/api",
   // 在routing-controllers注册已创建的express服务
-  controllers: [UserController], // 配置(控制器，校验器等)
+  controllers: [userController], // 配置(控制器，校验器等)
+  authorizationChecker: async (action: Action, roles: string[]) => {
+    // 检验token
+    const token = action.request.headers["authorization"];
+    if (token !== "123") {
+      return false;
+    }
+    return true;
+  },
 });
-
-// routes
-// routes(app);
 
 // error-handling
 app.on("error", (err, ctx) => {
