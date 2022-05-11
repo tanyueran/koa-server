@@ -25,37 +25,39 @@ export default class UserDao {
     return new Promise((resolve, reject) => {
       pool.getConnection((err: any, con: PoolConnection) => {
         if (err) return reject(err);
-        con.beginTransaction((err) => {
+        con.beginTransaction(async (err) => {
           if (err) return reject(err);
-          con.execute(
-            "insert into user(id,username,password) values(?,?,?)",
-            [9999, "root", "123456"],
-            (err) => {
-              if (err) {
-                con.rollback(() => {
-                  resolve(false);
-                });
-                return reject(err);
-              }
+          try {
+            // 保存前需要确定唯一性
+            await con.execute(
+              "insert into user(id,username,password) values(?,?,?)",
+              [9999, "root", "123456"]
+            );
+            await con.execute(
+              "insert into user(username,password) values(?,?)",
+              [user.name, user.password]
+            );
+
+            if (user.password === "123456") {
+              con.commit((err) => {
+                if (err) return reject(err);
+                resolve(true);
+              });
+            } else {
+              con.rollback(() => {
+                resolve(false);
+              });
             }
-          );
-          con.execute(
-            "insert into user(username,password) values(?,?)",
-            [user.name, user.password],
-            (err) => {
-              if (err) return reject(err);
-              if (user.password === "123456") {
-                con.commit((err) => {
-                  if (err) return reject(err);
-                  resolve(true);
-                });
-              } else {
-                con.rollback(() => {
-                  resolve(false);
-                });
-              }
-            }
-          );
+          } catch (err) {
+            con.rollback(() => {
+              reject(err);
+            });
+          } finally {
+            con.release();
+          }
+        });
+        con.on("error", (err: any) => {
+          reject(err);
         });
       });
     });

@@ -1,6 +1,6 @@
 import mysql from "mysql2";
 
-export const pool = mysql.createPool({
+const pool = mysql.createPool({
   host: "localhost",
   user: "root",
   database: "koa-server",
@@ -9,3 +9,5 @@ export const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
+
+export { pool };
