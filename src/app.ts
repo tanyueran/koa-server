@@ -51,6 +51,7 @@ useKoaServer(app, {
   // 在routing-controllers注册已创建的express服务
   controllers: [userController], // 配置(控制器，校验器等)
   authorizationChecker: async (action: Action, roles: string[]) => {
+    console.log(action);
     // 检验token
     const token = action.request.headers["authorization"];
     if (token !== "123") {

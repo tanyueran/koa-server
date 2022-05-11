@@ -1,4 +1,11 @@
-import { JsonController, Param, Get, Authorized } from "routing-controllers";
+import {
+  JsonController,
+  Param,
+  Get,
+  Authorized,
+  Body,
+  Post,
+} from "routing-controllers";
 import { Inject, Service } from "typedi";
 
 import User from "../model/user";
@@ -14,7 +21,7 @@ export default class UserController {
     this.userService = userService;
   }
 
-  @Authorized()
+  // @Authorized(["admin"])
   @Get("/user/:id")
   async getUsers(@Param("id") id: string): Promise<Result<User | null>> {
     let data = await this.userService.getUserInfoById(id);
@@ -23,5 +30,10 @@ export default class UserController {
     }
     data.password = "";
     return successResult(data);
+  }
+
+  @Post("/user")
+  addUser(@Body() user: User): Promise<boolean> {
+    return this.userService.addUser(user);
   }
 }

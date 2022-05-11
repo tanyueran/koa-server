@@ -11,7 +11,11 @@ export default class UserService {
     this.userDao = userDao;
   }
 
-  async getUserInfoById(id: string): Promise<User | null> {
+  getUserInfoById(id: string): Promise<User | null> {
     return this.userDao.getUserInfoById(id);
+  }
+
+  addUser(user: User): Promise<boolean> {
+    return this.userDao.addUserInfo(user);
   }
 }
